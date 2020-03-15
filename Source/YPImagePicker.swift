@@ -17,7 +17,7 @@ public protocol YPImagePickerDelegate: AnyObject {
 open class YPImagePicker: UINavigationController {
       
     open override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .portrait
+        return .all
     }
     
     private var _didFinishPicking: (([YPMediaItem], Bool) -> Void)?
