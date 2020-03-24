@@ -88,6 +88,11 @@ public class YPLibraryVC: UIViewController, YPPermissionCheckable {
             v.assetViewContainer.setMultipleSelectionMode(on: multipleSelectionEnabled)
             v.collectionView.reloadData()
         }
+        
+        if YPConfig.library.hidePicking {
+            v.collectionView.isHidden = true
+            
+        }
     }
     
     // MARK: - View Lifecycle

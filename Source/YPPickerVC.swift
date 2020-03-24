@@ -231,6 +231,12 @@ open class YPPickerVC: YPBottomPager, YPBottomPagerDelegate {
             )
             |-(>=8)-label.centerHorizontally()-(>=8)-|
             align(horizontally: label)
+        } else if YPConfig.library.hidePicking {
+            titleView.sv(
+                label
+            )
+            |-(>=8)-label.centerHorizontally()-(>=8)-|
+            align(horizontally: label)
         } else {
             let arrow = UIImageView()
             arrow.image = YPConfig.icons.arrowDownIcon

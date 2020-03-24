@@ -162,6 +162,7 @@ public struct YPImagePickerConfiguration {
 
 /// Encapsulates library specific settings.
 public struct YPConfigLibrary {
+    public var hidePicking = false
     
     public var options: PHFetchOptions? = nil
 
