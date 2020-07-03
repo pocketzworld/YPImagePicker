@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Photos
 
 extension YPLibraryVC {
     var isLimitExceeded: Bool { return selection.count >= YPConfig.library.maxNumberOfItems }
@@ -201,6 +202,11 @@ extension YPLibraryVC: UICollectionViewDelegate {
     }
     
     public func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+        let selectedAsset = mediaManager.fetchResult[indexPath.row]
+        if multipleSelectionEnabled, (selectedAsset.mediaType == PHAssetMediaType.video) {
+            return false
+        }
+
         return isProcessing == false
     }
     
