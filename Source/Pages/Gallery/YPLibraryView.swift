@@ -14,6 +14,7 @@ final class YPLibraryView: UIView {
     
     let assetZoomableViewMinimalVisibleHeight: CGFloat  = 50
     
+    @IBOutlet weak var backgroundView: UIView!
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var assetZoomableView: YPAssetZoomableView!
     @IBOutlet weak var assetViewContainer: YPAssetViewContainer!
@@ -37,6 +38,7 @@ final class YPLibraryView: UIView {
             |line| ~ 1
         )
         
+        backgroundView.backgroundColor = .offWhiteOrBlack
         line.backgroundColor = .ypSystemBackground
         
         setupMaxNumberOfItemsView()
