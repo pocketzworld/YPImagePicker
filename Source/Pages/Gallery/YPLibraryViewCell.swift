@@ -31,7 +31,7 @@ class YPMultipleSelectionIndicator: UIView {
         
         circle.layer.cornerRadius = size / 2.0
         label.textAlignment = .center
-        label.textColor = .white
+        label.textColor = .offWhiteOrBlack
         label.font = UIFont.systemFont(ofSize: 12, weight: .regular)
         
         set(number: nil)
