@@ -74,7 +74,7 @@ class YPVideoProcessor {
         if YPConfig.onlySquareImagesFromCamera {
             videoComposition.renderSize = CGSize(width: CGFloat(clipVideoTrack.naturalSize.height), height: CGFloat(clipVideoTrack.naturalSize.height))
         } else {
-            videoComposition.renderSize = CGSize(width: CGFloat(clipVideoTrack.naturalSize.height), height: CGFloat(clipVideoTrack.naturalSize.width))
+            videoComposition.renderSize = clipVideoTrack.naturalSize
         }
         videoComposition.frameDuration = CMTimeMake(value: 1, timescale: 30)
         let instruction = AVMutableVideoCompositionInstruction()
@@ -82,9 +82,7 @@ class YPVideoProcessor {
         
         // rotate to potrait
         let transformer = AVMutableVideoCompositionLayerInstruction(assetTrack: clipVideoTrack)
-        let t1 = CGAffineTransform(translationX: clipVideoTrack.naturalSize.height, y: -(clipVideoTrack.naturalSize.width - clipVideoTrack.naturalSize.height) / 2)
-        let t2: CGAffineTransform = t1.rotated(by: .pi/2)
-        let finalTransform: CGAffineTransform = t2
+        let finalTransform = croppedTransform(from: clipVideoTrack.preferredTransform, and: clipVideoTrack.naturalSize)
         transformer.setTransform(finalTransform, at: CMTime.zero)
         instruction.layerInstructions = [transformer]
         videoComposition.instructions = [instruction]
@@ -107,6 +105,38 @@ class YPVideoProcessor {
             }
             completion(nil)
             return
+        }
+    }
+
+    static func croppedTransform(from transform: CGAffineTransform, and size: CGSize) -> CGAffineTransform {
+        let cropMargin = YPConfig.onlySquareImagesFromCamera ? (size.width - size.height) * 0.5 : 0.0
+        let rotation = atan2(transform.b, transform.a)
+        let translation: CGPoint
+
+        switch orientation(from: transform) {
+        case .up:
+            translation = .init(x: -cropMargin, y: 0)
+        case .right:
+            translation = .init(x: size.height, y: -cropMargin)
+        case .down:
+            translation = .init(x: size.width - cropMargin, y: size.height)
+        default:
+            translation = .init(x: 0, y: size.width - cropMargin)
+        }
+
+        return CGAffineTransform(translationX: translation.x, y: translation.y)
+            .rotated(by: rotation)
+    }
+
+    private static func orientation(from transform: CGAffineTransform) -> UIImage.Orientation {
+        if transform.a == 0 && transform.b == 1.0 && transform.c == -1.0 && transform.d == 0 {
+            return .right
+        } else if transform.a == 0 && transform.b == -1.0 && transform.c == 1.0 && transform.d == 0 {
+            return .left
+        } else if transform.a == -1.0 && transform.b == 0 && transform.c == 0 && transform.d == -1.0 {
+            return .down
+        } else {
+            return .up
         }
     }
     
