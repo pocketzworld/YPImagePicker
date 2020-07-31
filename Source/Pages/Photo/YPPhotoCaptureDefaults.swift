@@ -91,6 +91,7 @@ extension YPPhotoCapture {
     func setupPreview() {
         videoLayer = AVCaptureVideoPreviewLayer(session: session)
         DispatchQueue.main.async {
+            self.videoLayer.applyUIOrientation()
             self.videoLayer.frame = self.previewView.bounds
             self.videoLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
             self.previewView.layer.addSublayer(self.videoLayer)

@@ -284,17 +284,7 @@ class YPVideoCaptureHelper: NSObject {
         let videoLayer = AVCaptureVideoPreviewLayer(session: session)
 
         DispatchQueue.main.async {
-            switch UIInterfaceOrientation.current {
-            case .landscapeLeft:
-                videoLayer.connection?.videoOrientation = .landscapeLeft
-            case .landscapeRight:
-                videoLayer.connection?.videoOrientation = .landscapeRight
-            case .portraitUpsideDown:
-                videoLayer.connection?.videoOrientation = .portraitUpsideDown
-            @unknown default:
-                videoLayer.connection?.videoOrientation = .portrait
-            }
-
+            videoLayer.applyUIOrientation()
             videoLayer.frame = self.previewView.bounds
             videoLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
             self.previewView.layer.addSublayer(videoLayer)
