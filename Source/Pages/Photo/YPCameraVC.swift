@@ -182,19 +182,22 @@ public class YPCameraVC: UIViewController, UIGestureRecognizerDelegate, YPPermis
     
     // Used when image is taken from the front camera.
     func flipImage(image: UIImage!) -> UIImage! {
-        let imageSize: CGSize = image.size
-        UIGraphicsBeginImageContextWithOptions(imageSize, true, 1.0)
-        let ctx = UIGraphicsGetCurrentContext()!
-        ctx.rotate(by: CGFloat(Double.pi/2.0))
-        ctx.translateBy(x: 0, y: -imageSize.width)
-        ctx.scaleBy(x: imageSize.height/imageSize.width, y: imageSize.width/imageSize.height)
-        ctx.draw(image.cgImage!, in: CGRect(x: 0.0,
-                                            y: 0.0,
-                                            width: imageSize.width,
-                                            height: imageSize.height))
-        let newImage: UIImage = UIGraphicsGetImageFromCurrentImageContext()!
-        UIGraphicsEndImageContext()
-        return newImage
+        guard let initialCGImage = image.cgImage else {
+            return image
+        }
+
+        let exif = Int32(CGImagePropertyOrientation(image.imageOrientation).rawValue)
+        let ciImage = CIImage(cgImage: initialCGImage)
+            .oriented(forExifOrientation: exif)
+            .transformed(by: .init(scaleX: -1, y: 1))
+
+        let context = CIContext(options: nil)
+
+        guard let resultingCGImage = context.createCGImage(ciImage, from: ciImage.extent) else {
+            return image
+        }
+
+        return UIImage(cgImage: resultingCGImage)
     }
     
     @objc
