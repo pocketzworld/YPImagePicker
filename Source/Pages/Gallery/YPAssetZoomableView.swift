@@ -81,7 +81,7 @@ final class YPAssetZoomableView: UIScrollView {
             // Stored crop position in multiple selection
             if let scp173 = storedCropPosition {
                 strongSelf.applyStoredCropPosition(scp173)
-                //MARK: add update CropInfo after multiple
+                // MARK: add update CropInfo after multiple
                 updateCropInfo()
             }
         }
@@ -92,6 +92,7 @@ final class YPAssetZoomableView: UIScrollView {
 
             strongSelf.videoView.loadVideo(playerItem)
             strongSelf.videoView.play()
+            strongSelf.myDelegate?.ypAssetZoomableViewDidLayoutSubviews(strongSelf)
         }
     }
     
@@ -127,7 +128,7 @@ final class YPAssetZoomableView: UIScrollView {
             // Stored crop position in multiple selection
             if let scp173 = storedCropPosition {
                 strongSelf.applyStoredCropPosition(scp173)
-                //MARK: add update CropInfo after multiple
+                // add update CropInfo after multiple
                 updateCropInfo()
             }
             

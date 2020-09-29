@@ -131,9 +131,9 @@ extension YPPhotoCapture {
             maxAvailableVideoZoomFactor = min(maxAvailableVideoZoomFactor, YPConfig.maxCameraZoomFactor)
             
             let desiredZoomFactor = initVideoZoomFactor * scale
-            device.videoZoomFactor = max(minAvailableVideoZoomFactor, min(desiredZoomFactor, maxAvailableVideoZoomFactor))
-        }
-        catch let error {
+            device.videoZoomFactor = max(minAvailableVideoZoomFactor,
+										 min(desiredZoomFactor, maxAvailableVideoZoomFactor))
+        } catch let error {
            print("💩 \(error)")
         }
     }
