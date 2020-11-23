@@ -11,10 +11,19 @@ import UIKit
 import Photos
 
 internal func ypLocalized(_ str: String) -> String {
+    let englishBundlePath = Bundle(for: YPPickerVC.self).path(forResource: "en", ofType: "lproj")
+    
+    let fallbackEnglishString: String
+    if let englishBundlePath = englishBundlePath, let bundle = Bundle(path: englishBundlePath) {
+        fallbackEnglishString = NSLocalizedString(str, tableName: "YPImagePickerLocalizable", bundle: bundle, value: "", comment: "")
+    } else {
+        fallbackEnglishString = ""
+    }
+    
     return NSLocalizedString(str,
                              tableName: "YPImagePickerLocalizable",
                              bundle: Bundle(for: YPPickerVC.self),
-                             value: "",
+                             value: fallbackEnglishString,
                              comment: "")
 }
 

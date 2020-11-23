@@ -44,4 +44,21 @@ struct YPAlert {
         alert.addAction(UIAlertAction(title: YPConfig.wordings.ok, style: UIAlertAction.Style.default, handler: nil))
         return alert
     }
+    
+    static func imageUnavailableAlert(_ sourceView: UIView) -> UIAlertController {
+            let msg = YPConfig.wordings.warningImageUnavailable
+            let alert = UIAlertController(title: YPConfig.wordings.warningImagePickerError,
+                                          message: msg,
+                                           preferredStyle: .alert)
+            if let popoverController = alert.popoverPresentationController {
+                popoverController.sourceView = sourceView
+                popoverController.sourceRect = CGRect(x: sourceView.bounds.midX,
+                                                      y: sourceView.bounds.midY,
+                                                      width: 0,
+                                                      height: 0)
+                popoverController.permittedArrowDirections = []
+            }
+            alert.addAction(UIAlertAction(title: YPConfig.wordings.ok, style: UIAlertAction.Style.default, handler: nil))
+            return alert
+        }
 }

@@ -266,13 +266,13 @@ open class YPPickerVC: YPBottomPager, YPBottomPagerDelegate {
     }
     
     func updateUI() {
-		if !YPConfig.hidesCancelButton {
-			// Update Nav Bar state.
-			navigationItem.leftBarButtonItem = UIBarButtonItem(title: YPConfig.wordings.cancel,
+        if !YPConfig.hidesCancelButton {
+            // Update Nav Bar state.
+            navigationItem.leftBarButtonItem = UIBarButtonItem(title: YPConfig.wordings.cancel,
                                                            style: .plain,
                                                            target: self,
                                                            action: #selector(close))
-		}
+        }
         switch mode {
         case .library:
             setTitleViewWithTitle(aTitle: libraryVC?.title ?? "")
@@ -284,7 +284,7 @@ open class YPPickerVC: YPBottomPager, YPBottomPagerDelegate {
 
             // Disable Next Button until minNumberOfItems is reached.
             navigationItem.rightBarButtonItem?.isEnabled =
-				libraryVC!.selection.count >= YPConfig.library.minNumberOfItems
+                libraryVC!.selection.count >= YPConfig.library.minNumberOfItems
 
         case .camera:
             navigationItem.titleView = nil
@@ -317,15 +317,28 @@ open class YPPickerVC: YPBottomPager, YPBottomPagerDelegate {
         
         if mode == .library {
             libraryVC.doAfterPermissionCheck { [weak self] in
-                libraryVC.selectedMedia(photoCallback: { photo in
-                    self?.didSelectItems?([YPMediaItem.photo(p: photo)])
-                }, videoCallback: { video in
-                    self?.didSelectItems?([YPMediaItem
-                        .video(v: video)])
-                }, multipleItemsCallback: { items in
-                    self?.didSelectItems?(items)
-                })
+                guard let self = self else { return }
+                
+                libraryVC.selectedMedia { result in
+                    switch result {
+                    case .success(let items):
+                        if items.count > 0 {
+                            self.didSelectItems?(items)
+                        } else {
+                            self.showAlert(with: .unavailable)
+                        }
+                    case .failure(let error):
+                        self.showAlert(with: error)
+                    }
+                }
             }
+        }
+    }
+    
+    private func showAlert(with error: YPImagePickerError) {
+        DispatchQueue.main.async {
+            let alert = YPAlert.imageUnavailableAlert(self.view)
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
@@ -348,7 +361,7 @@ extension YPPickerVC: YPLibraryViewDelegate {
     }
     
     public func libraryViewStartedLoadingImage() {
-		//TODO remove to enable changing selection while loading but needs cancelling previous image requests.
+        //TODO remove to enable changing selection while loading but needs cancelling previous image requests.
         libraryVC?.isProcessing = true
         DispatchQueue.main.async {
             self.libraryVC?.v.fadeInLoader()
