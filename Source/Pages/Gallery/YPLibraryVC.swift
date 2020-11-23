@@ -9,6 +9,12 @@
 import UIKit
 import Photos
 
+public enum YPImagePickerError: Error {
+    case unavailable
+}
+
+public typealias YPImagePickerResult = Result<[YPMediaItem], YPImagePickerError>
+
 public class YPLibraryVC: UIViewController, YPPermissionCheckable {
     
     internal weak var delegate: YPLibraryViewDelegate?
@@ -59,7 +65,7 @@ public class YPLibraryVC: UIViewController, YPPermissionCheckable {
 
         v.assetViewContainer.multipleSelectionButton.isHidden = !(YPConfig.library.maxNumberOfItems > 1)
         v.maxNumberWarningLabel.text = String(format: YPConfig.wordings.warningMaxItemsLimit,
-											  YPConfig.library.maxNumberOfItems)
+                                              YPConfig.library.maxNumberOfItems)
         
         if let preselectedItems = YPConfig.library.preselectedItems, !preselectedItems.isEmpty {
             selection = preselectedItems.compactMap { item -> YPLibrarySelection? in
@@ -84,7 +90,7 @@ public class YPLibraryVC: UIViewController, YPPermissionCheckable {
         if YPConfig.library.hidePicking {
             v.collectionView.isHidden = true
             return
-        }            
+        }
 
         guard mediaManager.hasResultItems else {
             return
@@ -183,8 +189,8 @@ public class YPLibraryVC: UIViewController, YPPermissionCheckable {
         
         if multipleSelectionEnabled {
             if selection.isEmpty && YPConfig.library.preSelectItemOnMultipleSelection,
-				delegate?.libraryViewShouldAddToSelection(indexPath: IndexPath(row: currentlySelectedIndex, section: 0),
-														  numSelections: selection.count) ?? true {
+                delegate?.libraryViewShouldAddToSelection(indexPath: IndexPath(row: currentlySelectedIndex, section: 0),
+                                                          numSelections: selection.count) ?? true {
                 let asset = mediaManager.fetchResult[currentlySelectedIndex]
                 selection = [
                     YPLibrarySelection(index: currentlySelectedIndex,
@@ -334,7 +340,7 @@ public class YPLibraryVC: UIViewController, YPPermissionCheckable {
         let updateCropInfo = {
             self.updateCropInfo()
         }
-		
+        
         // MARK: add a func(updateCropInfo) after crop multiple
         DispatchQueue.global(qos: .userInitiated).async {
             switch asset.mediaType {
@@ -467,14 +473,12 @@ public class YPLibraryVC: UIViewController, YPPermissionCheckable {
                                                       callback: callback)
     }
     
-    public func selectedMedia(photoCallback: @escaping (_ photo: YPMediaPhoto) -> Void,
-                              videoCallback: @escaping (_ videoURL: YPMediaVideo) -> Void,
-                              multipleItemsCallback: @escaping (_ items: [YPMediaItem]) -> Void) {
+    public func selectedMedia(callback: @escaping (_ result: YPImagePickerResult) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
             
-            let selectedAssets: [(asset: PHAsset, cropRect: CGRect?)] = self.selection.map {
+            let selectedAssets: [(asset: PHAsset, cropRect: CGRect?)] = self.selection.compactMap {
                 guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [$0.assetIdentifier],
-													  options: PHFetchOptions()).firstObject else { fatalError() }
+                                                      options: PHFetchOptions()).firstObject else { return nil }
                 return (asset, $0.cropRect)
             }
             
@@ -505,7 +509,7 @@ public class YPLibraryVC: UIViewController, YPPermissionCheckable {
                     case .image:
                         self.fetchImageAndCrop(for: asset.asset, withCropRect: asset.cropRect) { image, exifMeta in
                             let photo = YPMediaPhoto(image: image.resizedImageIfNeeded(),
-													 exifMeta: exifMeta, asset: asset.asset)
+                                                     exifMeta: exifMeta, asset: asset.asset)
                             resultMediaItems.append(YPMediaItem.photo(p: photo))
                             asyncGroup.leave()
                         }
@@ -556,11 +560,14 @@ public class YPLibraryVC: UIViewController, YPPermissionCheckable {
                         
                         return firstIndex < secondIndex
                     }
-                    multipleItemsCallback(resultMediaItems)
+                    callback(.success(resultMediaItems))
                     self.delegate?.libraryViewFinishedLoading()
                 }
             } else {
-                let asset = selectedAssets.first!.asset
+                guard let asset = selectedAssets.first?.asset else {
+                    callback(.failure(.unavailable))
+                    return
+                }
                 switch asset.mediaType {
                 case .audio, .unknown:
                     return
@@ -571,7 +578,7 @@ public class YPLibraryVC: UIViewController, YPPermissionCheckable {
                                 self.delegate?.libraryViewFinishedLoading()
                                 let video = YPMediaVideo(thumbnail: thumbnailFromVideoPath(videoURL),
                                                          videoURL: videoURL, asset: asset)
-                                videoCallback(video)
+                                callback(.success([.video(v: video)]))
                             } else {
                                 print("YPLibraryVC -> selectedMedia -> Problems with fetching videoURL.")
                             }
@@ -584,7 +591,7 @@ public class YPLibraryVC: UIViewController, YPPermissionCheckable {
                             let photo = YPMediaPhoto(image: image.resizedImageIfNeeded(),
                                                      exifMeta: exifMeta,
                                                      asset: asset)
-                            photoCallback(photo)
+                            callback(.success([.photo(p: photo)]))
                         }
                     }
                 @unknown default:

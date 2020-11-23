@@ -20,3 +20,5 @@
 "YPImagePickerVideoTooLong" = "Pick a video less than %@ seconds long";
 "YPImagePickerVideoTooShort" = "The video must be at least %@ seconds";
 "YPImagePickerWarningItemsLimit" = "The limit is %d photos or videos";
+"YPImagePickerWarningImageUnavailable" = "The image is unavailable";
+"YPImagePickerWarningImagePickerError" = "Cannot load the image";
